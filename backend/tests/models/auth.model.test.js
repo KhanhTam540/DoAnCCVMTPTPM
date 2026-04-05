@@ -1,0 +1,46 @@
+var test  = require('node:test');
+var assert  = require('node:assert/strict');
+
+var { loadWithMocks }  = require('../helpers/module-loader');
+
+test('auth model findUserIdByUsernameOrEmail queries users by username or email', async () => {
+  let calls = [];
+  let db = {
+    query: async (...args) => {
+      calls.push(args);
+      return [[{ id: 7 }]];
+    }
+  };
+
+  let authModel = loadWithMocks('../../src/models/auth.model.js', {
+    '../config/db': db
+  });
+
+  let result = await authModel.findUserIdByUsernameOrEmail('alice', 'alice@example.com');
+
+  assert.deepEqual(calls, [[
+    'SELECT id FROM users WHERE username = ? OR email = ?',
+    ['alice', 'alice@example.com']
+  ]]);
+  assert.deepEqual(result, [{ id: 7 }]);
+});
+
+test('auth model findLoginUserByUsername queries grouped roles for login', async () => {
+  let calls = [];
+  let db = {
+    query: async (...args) => {
+      calls.push(args);
+      return [[{ id: 1, username: 'alice', roles: 'user' }]];
+    }
+  };
+
+  let authModel = loadWithMocks('../../src/models/auth.model.js', {
+    '../config/db': db
+  });
+
+  let result = await authModel.findLoginUserByUsername('alice');
+
+  assert.equal(calls[0][1][0], 'alice');
+  assert.match(calls[0][0], /GROUP_CONCAT\(r\.name\) as roles/);
+  assert.deepEqual(result, [{ id: 1, username: 'alice', roles: 'user' }]);
+});
