@@ -57,9 +57,5 @@ const adminApi = {
   getSettings: () => axiosClient.get('/admin/settings'),
   updateSettings: (data) => axiosClient.put('/admin/settings', data),
 };
-<<<<<<< HEAD
-13213232;
-=======
 
->>>>>>> 5034c23e22107c0b63297c8cec068842a1947add
 export default adminApi;
