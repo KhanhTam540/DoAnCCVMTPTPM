@@ -157,5 +157,5 @@ const AdminLayout = () => {
     </div>
   );
 };
-hello
+
 export default AdminLayout;
